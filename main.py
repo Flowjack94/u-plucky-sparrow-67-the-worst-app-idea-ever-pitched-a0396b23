@@ -14,7 +14,25 @@ ENTRY = (
 )
 
 
+def validate_entry(entry: str) -> None:
+    """Gate the one-liner: exactly 1 sentence, 1 line, <=240 UTF-8 chars."""
+    if "\n" in entry.strip():
+        raise ValueError("entry must be a single line (found a newline)")
+    if len(entry.encode("utf-8")) > 240:
+        raise ValueError(
+            f"entry is {len(entry.encode('utf-8'))} UTF-8 characters, over the 240 limit"
+        )
+    # One sentence: exactly one sentence-ending mark, at the very end.
+    stripped = entry.rstrip()
+    endings = sum(stripped.count(c) for c in ".!?")
+    if endings != 1 or stripped[-1] not in ".!?":
+        raise ValueError(
+            f"entry must be exactly 1 sentence (found {endings} sentence-ending marks)"
+        )
+
+
 def main() -> None:
+    validate_entry(ENTRY)
     os.makedirs("/output", exist_ok=True)
     with open("/output/entry.txt", "w", encoding="utf-8") as f:
         f.write(ENTRY + "\n")
